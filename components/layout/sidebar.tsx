@@ -33,6 +33,7 @@ const nav = [
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/explorer", label: "Data Explorer", icon: Table2 },
   { href: "/syncs", label: "Syncs", icon: RefreshCw },
+  { href: "/enrichment", label: "Enrichment", icon: Sparkles },
   { href: "/developers", label: "Developers", icon: Code2 },
   { href: "/monitoring", label: "Monitoring", icon: Activity },
   { href: "/data-quality", label: "Data Quality", icon: ShieldCheck },
