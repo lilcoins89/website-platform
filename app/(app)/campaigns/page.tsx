@@ -3,40 +3,43 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { campaigns, anomalies } from "@/lib/demo/data";
+import { Badge } from "@/components/ui/badge";
+import { campaigns as demoCampaigns } from "@/lib/demo/data";
 import { formatCurrency, formatNumber, formatRoas } from "@/lib/utils";
 
 export default function CampaignsPage() {
   const [q, setQ] = useState("");
   const [source, setSource] = useState<"all" | "meta" | "tiktok">("all");
-  const [sort, setSort] = useState<"roas" | "spend" | "revenue">("roas");
+  const [status, setStatus] = useState<"all" | "active" | "paused">("all");
 
   const rows = useMemo(() => {
-    let list = [...campaigns];
-    if (source !== "all") list = list.filter((c) => c.source === source);
-    if (q.trim()) {
-      const t = q.toLowerCase();
-      list = list.filter((c) => c.name.toLowerCase().includes(t));
-    }
-    list.sort((a, b) => b[sort] - a[sort]);
-    return list;
-  }, [q, source, sort]);
+    return demoCampaigns.filter((c) => {
+      if (source !== "all" && c.source !== source) return false;
+      if (status !== "all" && c.status !== status) return false;
+      if (q && !c.name.toLowerCase().includes(q.toLowerCase())) return false;
+      return true;
+    });
+  }, [q, source, status]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
         <p className="text-sm text-muted-foreground">
-          Unified campaign view across Meta and TikTok with ROAS, CPA, and anomaly flags.
+          Unified Meta and TikTok campaigns with shared metrics.
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[180px]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-8" placeholder="Search campaigns\u2026" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input
+            className="pl-9"
+            placeholder="Search campaigns\u2026"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
         <select
           className="h-9 rounded-md border bg-card px-3 text-sm"
@@ -49,20 +52,14 @@ export default function CampaignsPage() {
         </select>
         <select
           className="h-9 rounded-md border bg-card px-3 text-sm"
-          value={sort}
-          onChange={(e) => setSort(e.target.value as typeof sort)}
+          value={status}
+          onChange={(e) => setStatus(e.target.value as typeof status)}
         >
-          <option value="roas">Sort: ROAS</option>
-          <option value="spend">Sort: Spend</option>
-          <option value="revenue">Sort: Revenue</option>
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
         </select>
       </div>
-
-      {anomalies.length > 0 ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-          {anomalies.length} anomaly flag(s) in the demo window \u2014 see Dashboard for details.
-        </div>
-      ) : null}
 
       <Card>
         <CardContent className="p-0 overflow-x-auto">
@@ -76,22 +73,24 @@ export default function CampaignsPage() {
                 <th className="p-3 font-medium text-right">Revenue</th>
                 <th className="p-3 font-medium text-right">ROAS</th>
                 <th className="p-3 font-medium text-right">Conv.</th>
-                <th className="p-3 font-medium text-right">CPA</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((c) => (
                 <tr key={c.id} className="border-b last:border-0">
-                  <td className="p-3 font-medium max-w-[220px]">{c.name}</td>
+                  <td className="p-3 font-medium max-w-[220px] truncate">{c.name}</td>
                   <td className="p-3">
                     <Badge variant={c.source === "meta" ? "meta" : "tiktok"}>{c.source}</Badge>
                   </td>
-                  <td className="p-3 capitalize">{c.status}</td>
+                  <td className="p-3">
+                    <Badge variant={c.status === "active" ? "success" : "secondary"}>
+                      {c.status}
+                    </Badge>
+                  </td>
                   <td className="p-3 text-right tabular-nums">{formatCurrency(c.spend)}</td>
                   <td className="p-3 text-right tabular-nums">{formatCurrency(c.revenue)}</td>
                   <td className="p-3 text-right tabular-nums">{formatRoas(c.roas)}</td>
                   <td className="p-3 text-right tabular-nums">{formatNumber(c.conversions)}</td>
-                  <td className="p-3 text-right tabular-nums">{formatCurrency(c.cpa)}</td>
                 </tr>
               ))}
             </tbody>
