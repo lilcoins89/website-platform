@@ -12,6 +12,13 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#1e3a5f",
+};
+
 export const metadata: Metadata = {
   title: "Unify — Marketing & Commerce Data Layer",
   description:
