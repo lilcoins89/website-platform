@@ -1,13 +1,26 @@
-# Website Platform
+# Unify — Marketing Data Abstraction & Analytics Platform
 
-Private source of truth for the website platform.
+**One data layer for Meta Ads, TikTok Ads, and Shopify.**
 
-## GitHub integration status
+V1 SaaS platform with unified connectors, analytics, attribution, AI analyst, developer API, and enterprise UI — fully functional **demo mode**.
 
-Verified on 2026-09-01:
+## Run
 
-- Authenticated as [lilcoins89](https://github.com/lilcoins89)
-- Repository created: [lilcoins89/website-platform](https://github.com/lilcoins89/website-platform)
-- Files pushed to `main`
+```bash
+npm install
+npm run dev
+```
 
-App code will land here next.
+Open http://localhost:3000 — Start Building or sign in with any credentials (demo).
+
+## Stack
+
+Next.js App Router, TypeScript, Tailwind, Recharts, Lucide.
+
+Modular: `lib/connectors`, `lib/analytics`, `lib/ai`, `lib/monad`.
+
+## V1 sources
+
+Meta Ads · TikTok Ads · Shopify only (extensible architecture).
+
+Private repo: lilcoins89/website-platform
