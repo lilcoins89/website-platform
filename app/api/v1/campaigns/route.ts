@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { campaigns } from "@/lib/demo/data";
+import { desc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { campaigns } from "@/lib/db/schema";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json({
-    data: campaigns,
-    meta: { count: campaigns.length, demo: true },
-  });
+  const rows = await db.select().from(campaigns).orderBy(desc(campaigns.updatedAt));
+  return NextResponse.json({ data: rows, meta: { count: rows.length, demo: false } });
 }
