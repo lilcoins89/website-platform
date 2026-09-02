@@ -11,6 +11,7 @@ import {
   getYouTubeTranscript,
   getFacebookCompanyAds,
   findSocialProfiles,
+  getCreatorProfile,
   scrapeCreatorsDemo,
   safeCall,
   ScrapeCreatorsError,
@@ -44,6 +45,13 @@ export async function GET(req: NextRequest) {
           scrapeCreatorsDemo.creditBalance
         );
         return NextResponse.json({ data, meta: { demo, provider: "scrapecreators" } });
+      }
+      case "profile": {
+        const platform = searchParams.get("platform") as import("@/lib/scrapecreators/client").ScrapeCreatorsPlatform | null;
+        const handle = searchParams.get("handle") || "";
+        if (!platform || !handle) return NextResponse.json({ error: "platform and handle are required" }, { status: 400 });
+        const data = await getCreatorProfile(platform, handle);
+        return NextResponse.json({ data, meta: { demo: false, provider: "scrapecreators", platform, handle } });
       }
       case "tiktok_profile": {
         const handle = searchParams.get("handle") || "demo_brand";

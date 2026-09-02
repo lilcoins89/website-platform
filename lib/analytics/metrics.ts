@@ -63,18 +63,7 @@ export function campaignFromTotals(c: Campaign): Campaign {
 }
 
 export function enrichKpi(
-  partial: Partial<KpiSnapshot> &
-    Pick<
-      KpiSnapshot,
-      | "revenue"
-      | "adSpend"
-      | "orders"
-      | "customers"
-      | "conversions"
-      | "clicks"
-      | "impressions"
-      | "newCustomers"
-    >
+  partial: Partial<KpiSnapshot> & { conversions: number; impressions: number; clicks: number; revenue: number; adSpend: number; orders: number; customers: number; newCustomers: number }
 ): KpiSnapshot {
   const { revenue, adSpend, orders, customers, conversions, clicks, impressions, newCustomers } =
     partial;
@@ -83,8 +72,6 @@ export function enrichKpi(
     adSpend,
     orders,
     customers,
-    conversions,
-    clicks,
     roas: roas(revenue, adSpend),
     cac: cac(adSpend, newCustomers),
     cpa: cpa(adSpend, conversions),

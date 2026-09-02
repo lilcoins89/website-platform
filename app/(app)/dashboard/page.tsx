@@ -1,102 +1,29 @@
-import {
-  DollarSign,
-  Megaphone,
-  ShoppingCart,
-  Target,
-  TrendingUp,
-  Users,
-} from "lucide-react";
-import { KpiCard } from "@/components/shared/kpi-card";
-import { TimeSeriesChart } from "@/components/charts/time-series";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Activity, ArrowUpRight, Bot, CheckCircle2, RefreshCw, Users, WalletCards, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { anomalies, channelSummaries, dailyMetrics, kpi } from "@/lib/demo/data";
-import { formatCurrency, formatNumber, formatRoas, formatPercent } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency, formatNumber, formatRoas } from "@/lib/utils";
+
+type Workspace = { campaigns: Array<{ id: string; name: string; source: string; status: string; spend: number; revenue: number; roas: number; conversions: number }>; creators: Array<{ id: string; handle: string; platform: string; display_name: string | null; followers: number; engagement_rate: number; enriched_at: string | null }>; jobs: Array<{ id: string; kind: string; status: string; records_synced: number; created_at: string }>; kpi: { spend: number; revenue: number; conversions: number; roas: number } };
 
 export default function DashboardPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Cross-channel performance from the unified data layer (demo metrics).
-        </p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <KpiCard label="Revenue" value={formatCurrency(kpi.revenue)} change={kpi.revenueGrowth} icon={DollarSign} />
-        <KpiCard label="Ad spend" value={formatCurrency(kpi.adSpend)} icon={Megaphone} />
-        <KpiCard label="ROAS" value={formatRoas(kpi.roas)} icon={TrendingUp} />
-        <KpiCard label="CAC" value={formatCurrency(kpi.cac)} icon={Target} />
-        <KpiCard label="Orders" value={formatNumber(kpi.orders)} icon={ShoppingCart} />
-        <KpiCard label="Customers" value={formatNumber(kpi.customers)} icon={Users} />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue vs spend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TimeSeriesChart
-              data={dailyMetrics}
-              currency
-              series={[
-                { key: "revenue", label: "Revenue", color: "hsl(var(--chart-1))" },
-                { key: "spend", label: "Spend", color: "hsl(var(--chart-2))" },
-              ]}
-            />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Channel summary</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2 font-medium">Channel</th>
-                  <th className="pb-2 font-medium text-right">Spend</th>
-                  <th className="pb-2 font-medium text-right">Revenue</th>
-                  <th className="pb-2 font-medium text-right">ROAS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {channelSummaries.map((c) => (
-                  <tr key={c.channel} className="border-b last:border-0">
-                    <td className="py-2 capitalize font-medium">{c.channel}</td>
-                    <td className="py-2 text-right tabular-nums">{formatCurrency(c.spend)}</td>
-                    <td className="py-2 text-right tabular-nums">{formatCurrency(c.revenue)}</td>
-                    <td className="py-2 text-right tabular-nums">
-                      {c.channel === "shopify" ? "\u2014" : formatRoas(c.roas)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Anomalies</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {anomalies.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-start justify-between gap-2 rounded-md border p-3 text-sm">
-              <div>
-                <p className="font-medium">{a.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {a.campaignName} \u00b7 {formatPercent(a.changePercent)}
-                </p>
-              </div>
-              <Badge variant={a.severity === "critical" ? "destructive" : "warning"}>{a.severity}</Badge>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
+  const [data, setData] = useState<Workspace | null>(null);
+  const [error, setError] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const load = async () => { try { const response = await fetch("/api/workspace", { cache: "no-store" }); const result = await response.json(); if (!response.ok) throw new Error(result.error ?? "Unable to load workspace"); setData(result); setError(""); } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to load workspace"); } };
+  useEffect(() => { void load(); const timer = window.setInterval(() => void load(), 30000); return () => window.clearInterval(timer); }, []);
+  const queueSync = async () => { setSyncing(true); try { await fetch("/api/workspace", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "sync", kind: "full" }) }); await load(); } finally { setSyncing(false); } };
+  if (error) return <Card className="mx-auto max-w-xl"><CardContent className="flex flex-col items-center gap-3 p-8 text-center"><Activity className="size-8 text-destructive" /><p className="font-semibold">Live workspace unavailable</p><p className="text-sm leading-relaxed text-muted-foreground">{error}</p><Button onClick={() => void load()}>Retry connection</Button></CardContent></Card>;
+  if (!data) return <div className="flex min-h-64 items-center justify-center"><div className="flex items-center gap-3 text-sm text-muted-foreground"><RefreshCw className="size-4 animate-spin" />Loading your live workspace…</div></div>;
+  return <div className="flex flex-col gap-6">
+    <header className="flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 flex items-center gap-2"><Badge variant="secondary" className="gap-1.5"><span className="size-1.5 rounded-full bg-primary" />Live data</Badge><span className="text-xs text-muted-foreground">Auto-refreshes every 30s</span></div><h1 className="text-3xl font-semibold tracking-tight text-balance">Good morning, here&apos;s the signal.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Your campaigns, creator context, and sync health in one calm command center.</p></div><Button onClick={() => void queueSync()} disabled={syncing}>{syncing ? <RefreshCw className="animate-spin" data-icon="inline-start" /> : <RefreshCw data-icon="inline-start" />}{syncing ? "Queueing sync…" : "Sync now"}</Button></header>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><Metric icon={WalletCards} label="Revenue" value={formatCurrency(data.kpi.revenue)} hint="Across synced campaigns" /><Metric icon={Zap} label="Ad spend" value={formatCurrency(data.kpi.spend)} hint="Paid media investment" /><Metric icon={Activity} label="Blended ROAS" value={formatRoas(data.kpi.roas)} hint="Revenue / spend" /><Metric icon={Users} label="Conversions" value={formatNumber(data.kpi.conversions)} hint="Tracked outcomes" /></div>
+    <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr]"><Card><CardHeader className="flex-row items-center justify-between space-y-0"><div><CardTitle>Campaign performance</CardTitle><p className="mt-1 text-xs text-muted-foreground">{data.campaigns.length} live campaigns</p></div><a href="/campaigns" className="inline-flex h-8 items-center gap-2 rounded-md px-3 text-xs font-medium text-primary transition-colors hover:bg-accent">View all <ArrowUpRight data-icon="inline-end" /></a></CardHeader><CardContent><div className="flex flex-col gap-2">{data.campaigns.length ? data.campaigns.map(c => <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/60 p-4 transition-colors hover:bg-accent/50"><div><p className="font-medium">{c.name}</p><p className="mt-1 text-xs capitalize text-muted-foreground">{c.source} · {c.status}</p></div><div className="flex gap-6 text-right text-sm"><div><p className="text-xs text-muted-foreground">Revenue</p><p className="mt-1 font-semibold tabular-nums">{formatCurrency(Number(c.revenue))}</p></div><div><p className="text-xs text-muted-foreground">ROAS</p><p className="mt-1 font-semibold tabular-nums text-primary">{formatRoas(Number(c.roas))}</p></div></div></div>) : <EmptyState text="No campaigns yet. Add one from Workflows or queue a sync." />}</div></CardContent></Card><Card><CardHeader><CardTitle>Creator context</CardTitle><p className="mt-1 text-xs text-muted-foreground">Social proof attached to your campaigns</p></CardHeader><CardContent><div className="flex flex-col gap-2">{data.creators.length ? data.creators.slice(0, 5).map(c => <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl p-2 transition-colors hover:bg-accent/50"><div><p className="font-medium">@{c.handle}</p><p className="mt-1 text-xs capitalize text-muted-foreground">{c.platform} · {c.display_name ?? "Enriched profile"}</p></div><div className="text-right"><p className="font-semibold tabular-nums">{formatNumber(Number(c.followers))}</p><p className="text-xs text-muted-foreground">followers</p></div></div>) : <EmptyState text="Enrich a creator to attach real social stats." />}</div></CardContent></Card></div>
+    <Card><CardHeader className="flex-row items-center gap-2 space-y-0"><Bot className="size-4 text-primary" /><div><CardTitle>Sync activity</CardTitle><p className="mt-1 text-xs text-muted-foreground">Recent data movement across connected sources</p></div></CardHeader><CardContent><div className="flex flex-col gap-2">{data.jobs.length ? data.jobs.map(j => <div key={j.id} className="flex items-center justify-between rounded-xl border bg-background/50 px-4 py-3 text-sm"><span className="flex items-center gap-2"><CheckCircle2 className="size-4 text-primary" />{j.kind} sync</span><span className="flex items-center gap-3"><span className="text-xs text-muted-foreground">{j.records_synced} records</span><Badge variant={j.status === "completed" ? "secondary" : "outline"}>{j.status}</Badge></span></div>) : <EmptyState text="No sync jobs yet." />}</div></CardContent></Card>
+  </div>;
 }
+function EmptyState({ text }: { text: string }) { return <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">{text}</div>; }
+function Metric({ icon: Icon, label, value, hint }: { icon: typeof Activity; label: string; value: string; hint: string }) { return <Card className="overflow-hidden"><CardContent className="flex items-start gap-3 p-5"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" /></div><div className="min-w-0"><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">{value}</p><p className="mt-1 truncate text-[11px] text-muted-foreground">{hint}</p></div></CardContent></Card>; }

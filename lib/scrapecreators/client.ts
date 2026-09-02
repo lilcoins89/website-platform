@@ -112,6 +112,16 @@ export async function getInstagramProfile(handle: string) {
   return request<unknown>("/v1/instagram/profile", { handle: handle.replace(/^@/, "") });
 }
 
+export async function getCreatorProfile(platform: ScrapeCreatorsPlatform, handle: string) {
+  const username = handle.replace(/^@/, "").trim();
+  if (!username) throw new ScrapeCreatorsError("A username is required", 400);
+  if (platform === "tiktok") return getTikTokProfile(username) as Promise<Record<string, unknown>>;
+  if (platform === "instagram") return getInstagramProfile(username) as Promise<Record<string, unknown>>;
+  // ScrapeCreators exposes cross-platform discovery for YouTube and Facebook usernames.
+  if (platform === "youtube" || platform === "facebook") return findSocialProfiles(username) as Promise<Record<string, unknown>>;
+  throw new ScrapeCreatorsError(`Unsupported enrichment platform: ${platform}`, 400);
+}
+
 export async function getInstagramPosts(handle: string, amount = 12) {
   return request<unknown>("/v2/instagram/user/posts", {
     handle: handle.replace(/^@/, ""),

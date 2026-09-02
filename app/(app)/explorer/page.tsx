@@ -16,7 +16,7 @@ type TableKey = keyof typeof tables;
 
 export default function ExplorerPage() {
   const [table, setTable] = useState<TableKey>("campaigns");
-  const rows = tables[table] as Record<string, unknown>[];
+  const rows = tables[table] as unknown as Record<string, unknown>[];
   const cols = rows[0] ? Object.keys(rows[0]).slice(0, 8) : [];
 
   return (
