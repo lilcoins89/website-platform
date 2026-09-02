@@ -3,33 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: 220 20% 97%;
-  --foreground: 224 30% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 224 30% 12%;
-  --primary: 224 70% 40%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 94%;
-  --secondary-foreground: 224 30% 18%;
-  --muted: 220 14% 95%;
-  --muted-foreground: 220 10% 42%;
-  --accent: 220 14% 93%;
-  --accent-foreground: 224 30% 18%;
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
-  --success: 152 60% 36%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 224 30% 12%;
-  --border: 220 13% 90%;
-  --input: 220 13% 90%;
-  --ring: 224 70% 40%;
-  --radius: 0.5rem;
+  --background: 45 36% 94%;
+  --foreground: 154 28% 14%;
+  --card: 45 42% 98%;
+  --card-foreground: 154 28% 14%;
+  --primary: 151 49% 27%;
+  --primary-foreground: 45 42% 98%;
+  --secondary: 42 24% 88%;
+  --secondary-foreground: 154 28% 18%;
+  --muted: 43 25% 90%;
+  --muted-foreground: 154 12% 43%;
+  --accent: 151 24% 86%;
+  --accent-foreground: 151 49% 22%;
+  --destructive: 0 63% 46%;
+  --destructive-foreground: 45 42% 98%;
+  --success: 151 49% 27%;
+  --success-foreground: 45 42% 98%;
+  --warning: 38 76% 43%;
+  --warning-foreground: 154 28% 14%;
+  --border: 43 22% 82%;
+  --input: 43 22% 82%;
+  --ring: 151 49% 27%;
+  --radius: 0.75rem;
 }
 
 * { border-color: hsl(var(--border)); }
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
+html { background: hsl(var(--background)); }
+body { background: hsl(var(--background)); color: hsl(var(--foreground)); font-feature-settings: "ss01" 1, "cv11" 1; }
 button, [role="button"] { cursor: pointer; }
+
+@layer components {
+  .surface-grid { background-image: linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px); background-size: 28px 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
