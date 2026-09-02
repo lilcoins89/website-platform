@@ -1,37 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plug, RefreshCw, Unplug } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { sources as demoSources } from "@/lib/demo/data";
 import { relativeTime, formatNumber } from "@/lib/utils";
 import type { Source } from "@/types";
 
 export default function SourcesPage() {
-  const [items, setItems] = useState<Source[]>(demoSources);
+  const [items, setItems] = useState<Source[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+
+  async function loadSources() {
+    const response = await fetch("/api/sources", { cache: "no-store" });
+    if (!response.ok) throw new Error("Unable to load sources");
+    setItems((await response.json()) as Source[]);
+  }
+
+  useEffect(() => {
+    void loadSources();
+  }, []);
 
   async function sync(id: string) {
     setBusy(id);
-    setItems((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "syncing" as const } : s))
-    );
-    await new Promise((r) => setTimeout(r, 900));
-    setItems((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              status: "connected",
-              lastSyncAt: new Date().toISOString(),
-              dataFreshness: "just now",
-            }
-          : s
-      )
-    );
-    setBusy(null);
+    try {
+      await fetch(`/api/sources/${id}/sync`, { method: "POST" });
+      await loadSources();
+    } finally {
+      setBusy(null);
+    }
   }
 
   return (
@@ -39,8 +37,7 @@ export default function SourcesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sources</h1>
         <p className="text-sm text-muted-foreground">
-          V1 connectors: Meta Ads, TikTok Ads, Shopify. Demo mode uses synthetic data until OAuth is
-          configured.
+          V1 connectors: Meta Ads, TikTok Ads, Shopify. Connect a source to begin importing live data.
         </p>
       </div>
 

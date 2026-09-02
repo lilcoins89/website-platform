@@ -174,18 +174,8 @@ export const scrapeCreatorsDemo = {
 
 export async function safeCall<T>(
   live: () => Promise<T>,
-  demo: T
-): Promise<{ data: T; demo: boolean }> {
-  if (!isScrapeCreatorsConfigured()) {
-    return { data: demo, demo: true };
-  }
-  try {
-    const data = await live();
-    return { data, demo: false };
-  } catch (e) {
-    if (e instanceof ScrapeCreatorsError && e.status === 401) {
-      return { data: demo, demo: true };
-    }
-    throw e;
-  }
+  _fallback?: T,
+): Promise<{ data: T; demo: false }> {
+  const data = await live();
+  return { data, demo: false };
 }
