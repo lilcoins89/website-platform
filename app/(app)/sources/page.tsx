@@ -24,9 +24,12 @@ export default function SourcesPage() {
 
   async function sync(id: string) {
     setBusy(id);
-    await fetch(`/api/sources/${id}/sync`, { method: "POST" });
-    await mutate();
-    setBusy(null);
+    try {
+      await fetch(`/api/sources/${id}/sync`, { method: "POST" });
+      await loadSources();
+    } finally {
+      setBusy(null);
+    }
   }
 
   return (
