@@ -112,6 +112,14 @@ export async function getInstagramProfile(handle: string) {
   return request<unknown>("/v1/instagram/profile", { handle: handle.replace(/^@/, "") });
 }
 
+export async function getCreatorProfile(platform: ScrapeCreatorsPlatform, handle: string) {
+  if (platform === "tiktok") return getTikTokProfile(handle) as Promise<Record<string, unknown>>;
+  if (platform === "instagram") return getInstagramProfile(handle) as Promise<Record<string, unknown>>;
+  if (platform === "facebook") return findSocialProfiles(handle) as Promise<Record<string, unknown>>;
+  if (platform === "youtube") return findSocialProfiles(handle) as Promise<Record<string, unknown>>;
+  throw new ScrapeCreatorsError(`Unsupported enrichment platform: ${platform}`, 400);
+}
+
 export async function getInstagramPosts(handle: string, amount = 12) {
   return request<unknown>("/v2/instagram/user/posts", {
     handle: handle.replace(/^@/, ""),

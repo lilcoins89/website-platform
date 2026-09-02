@@ -19,7 +19,7 @@ export abstract class BaseConnector implements Connector {
     cursor?: string;
   }): Promise<{ records: unknown[]; nextCursor?: string }>;
 
-  abstract normalizeData(raw: unknown[]): unknown[];
+  abstract normalizeData(raw: unknown[]): import("@/types").Campaign[] | import("@/types").Customer[] | import("@/types").Order[];
 
   validateData(records: unknown[]): { valid: unknown[]; invalid: unknown[] } {
     const valid: unknown[] = [];

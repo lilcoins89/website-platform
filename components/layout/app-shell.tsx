@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileHeader } from "@/components/layout/mobile-header";
-import { DemoBanner } from "@/components/shared/demo-banner";
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden">
-      <DemoBanner />
       <MobileHeader onMenuClick={() => setMenuOpen(true)} />
       <div className="flex min-h-0 flex-1">
         <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
