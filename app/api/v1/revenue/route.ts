@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { dailyMetrics, kpi } from "@/lib/demo/data";
+import { desc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { dailyMetrics } from "@/lib/db/schema";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json({
-    data: {
-      total: kpi.revenue,
-      series: dailyMetrics.map((d) => ({ date: d.date, revenue: d.revenue })),
-    },
-    meta: { demo: true },
-  });
+  const rows = await db.select().from(dailyMetrics).orderBy(desc(dailyMetrics.metricDate));
+  return NextResponse.json({ data: { total: rows.reduce((sum, row) => sum + Number(row.revenue), 0), series: rows.map((row) => ({ date: row.metricDate, revenue: Number(row.revenue) })) }, meta: { live: true } });
 }
