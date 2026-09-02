@@ -20,6 +20,11 @@ export default function EnrichmentPage() {
   const [result, setResult] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [lastMeta, setLastMeta] = useState<{ demo?: boolean } | null>(null);
+  const [platform, setPlatform] = useState<"tiktok" | "instagram" | "youtube" | "facebook">("tiktok");
+
+  function runProfile() {
+    void run("profile", { platform, handle });
+  }
 
   useEffect(() => {
     fetch("/api/v1/scrapecreators?action=status")
@@ -70,6 +75,23 @@ export default function EnrichmentPage() {
           </a>
         ) : null}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Creator username lookup</CardTitle>
+          <CardDescription>Pull public profile and activity signals using a username.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 sm:flex-row">
+          <select aria-label="Social platform" value={platform} onChange={(event) => setPlatform(event.target.value as typeof platform)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="youtube">YouTube</option>
+            <option value="facebook">Facebook</option>
+          </select>
+          <Input className="flex-1" value={handle} onChange={(event) => setHandle(event.target.value)} placeholder="username" aria-label="Creator username" />
+          <Button disabled={loading || !handle.trim()} onClick={runProfile}>Analyze profile</Button>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
